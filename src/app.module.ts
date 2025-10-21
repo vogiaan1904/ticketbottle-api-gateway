@@ -1,35 +1,23 @@
+import { GlobalExceptionFilter } from '@filters/global-exception.filter';
+import { ResponseInterceptor } from '@interceptors/response.interceptor';
+import { TransformInterceptor } from '@interceptors/transfrom.interceptor';
+import { LoggerMiddleware } from '@middlewares/logging.middleware';
 import {
   ClassSerializerInterceptor,
   MiddlewareConsumer,
   Module,
   RequestMethod,
 } from '@nestjs/common';
+import { APP_FILTER, APP_INTERCEPTOR, Reflector } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SharedModule } from './shared.module';
-import { AppConfigService } from '@services/config.service';
-import { JwtModule } from '@nestjs/jwt';
-import { APP_FILTER, APP_INTERCEPTOR, Reflector } from '@nestjs/core';
-import { TransformInterceptor } from '@interceptors/transfrom.interceptor';
-import { GlobalExceptionFilter } from '@filters/global-exception.filter';
-import { ResponseInterceptor } from '@interceptors/response.interceptor';
-import { LoggerMiddleware } from '@middlewares/logging.middleware';
 import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { SharedModule } from './shared.module';
+import { EventsModule } from './modules/events/events.module';
 
 @Module({
-  imports: [
-    SharedModule,
-    JwtModule.registerAsync({
-      useFactory: async (configService: AppConfigService) => {
-        return {
-          secret: configService.microservicesConfig.internalKey,
-          signOptions: { expiresIn: '15m' },
-        };
-      },
-      inject: [AppConfigService],
-    }),
-    AuthModule,
-  ],
+  imports: [SharedModule, AuthModule, UsersModule, EventsModule],
   controllers: [AppController],
   providers: [
     AppService,
@@ -44,16 +32,6 @@ import { AuthModule } from './modules/auth/auth.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useFactory: (reflector: Reflector) => {
-        return new ClassSerializerInterceptor(reflector, {
-          enableImplicitConversion: false,
-          excludeExtraneousValues: true,
-        });
-      },
-      inject: [Reflector],
     },
   ],
 })

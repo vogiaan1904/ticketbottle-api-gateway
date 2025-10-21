@@ -29,6 +29,10 @@ export class AppConfigService {
     return this.get('NODE_ENV') || 'development';
   }
 
+  get isDev(): boolean {
+    return this.nodeEnv === 'development';
+  }
+
   get databaseConfig() {
     return {
       url: this.get('DATABASE_URL'),

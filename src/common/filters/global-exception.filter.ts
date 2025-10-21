@@ -1,49 +1,55 @@
+import { ErrorResponse } from '@/shared/interfaces/response-body.interface';
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { AppConfigService } from '@services/config.service';
 import { LoggerService } from '@services/logger.service';
 import { Response } from 'express';
+import { BusinessException } from '../exceptions/business.exception';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   constructor(
-    private readonly configService: AppConfigService,
-    private readonly loggerService: LoggerService,
-  ) {}
-  catch(exception: HttpException | Error, host: ArgumentsHost) {
+    private readonly config: AppConfigService,
+    private readonly logger: LoggerService,
+  ) {
+    this.logger.setContext(GlobalExceptionFilter.name);
+  }
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    const message =
-      exception instanceof HttpException ? exception.message : 'Internal server error';
+    const responseBody = this.handleException(exception, ctx.getRequest());
+    const statusCode =
+      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    // Extract only the stack trace (without error message)
-    const stackOnly =
-      exception instanceof Error && exception.stack
-        ? // ? exception.stack.split('\n').slice(1).join('\n') // Remove first line (error message)
-          exception.stack
-        : undefined;
+    this.logger.error(
+      responseBody.message,
+      exception instanceof Error && exception.stack ? exception.stack : undefined,
+    );
 
-    this.loggerService.error(message, stackOnly);
-
-    // console.log(exception);
-
-    GlobalExceptionFilter.handleResponse(response, exception);
+    response.status(statusCode).json(responseBody);
   }
 
-  private static handleResponse(response: Response, exception: HttpException | Error): void {
-    let responseBody: any = { message: 'Internal server error' };
-    let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
-
-    if (exception instanceof HttpException) {
-      responseBody = exception.getResponse();
-      statusCode = exception.getStatus();
-    } else if (exception instanceof Error) {
-      responseBody = {
-        statusCode: statusCode,
-        message: exception.stack,
+  private handleException(exception: unknown, request: Request): ErrorResponse {
+    if (exception instanceof BusinessException) {
+      const response = exception.getResponse() as ErrorResponse;
+      return {
+        ...response,
       };
     }
 
-    response.status(statusCode).json(responseBody);
+    if (exception instanceof HttpException) {
+      return {
+        success: false,
+        message: exception.message,
+        details: exception.getResponse(),
+      };
+    }
+
+    return {
+      success: false,
+      message: this.config.isDev
+        ? (exception as Error)?.message || 'Unknown error'
+        : 'Internal server error',
+    };
   }
 }

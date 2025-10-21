@@ -1,11 +1,13 @@
-import { Body, Controller, Get, Post, Req, Request, Res, UseGuards } from '@nestjs/common';
-import { SignupDto } from './dto/signup.dto';
-import { TokenPair, TokenPayload } from '@/shared/interfaces/token.interface';
-import { AuthService } from './auth.service';
-import { RequestWithUser } from '@/shared/types/request-user.type';
-import { SigninDto } from './dto/signin.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { SuccessMessage } from '@/common/decorators/success-response.decorator';
 import { AccessGuard } from '@/common/guards/access.guard';
+import { TokenPair } from '@/shared/interfaces/token.interface';
+import { RequestUser, RequestWithUser } from '@/shared/types/request-user.type';
+import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { SigninDto } from './dto/signin.dto';
+import { SignupDto } from './dto/signup.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -23,7 +25,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(AccessGuard)
-  async me(@Request() req: any): Promise<TokenPayload> {
+  async me(@Request() req: RequestWithUser): Promise<RequestUser> {
     return req.user;
   }
 
@@ -34,15 +36,25 @@ export class AuthController {
 
   @Post('logout')
   @UseGuards(AccessGuard)
-  async logout(@Body() dto: RefreshTokenDto): Promise<{ message: string }> {
+  @SuccessMessage('Logged out successfully')
+  async logout(@Body() dto: RefreshTokenDto): Promise<void> {
     await this.authService.invalidateRefreshToken(dto.refreshToken);
-    return { message: 'Logged out successfully' };
   }
 
   @Post('logout-all')
   @UseGuards(AccessGuard)
-  async logoutAll(@Request() req): Promise<{ message: string }> {
-    await this.authService.invalidateAllUserTokens(req.user.sub);
-    return { message: 'Logged out from all devices' };
+  @SuccessMessage('Logged out from all devices')
+  async logoutAll(@Request() req: RequestWithUser): Promise<void> {
+    await this.authService.invalidateAllUserTokens(req.user.id);
+  }
+
+  @Post('change-password')
+  @UseGuards(AccessGuard)
+  @SuccessMessage('Password changed successfully')
+  async changePassword(
+    @Request() req: RequestWithUser,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<void> {
+    await this.authService.changePassword(req.user.id, dto);
   }
 }

@@ -1,4 +1,3 @@
-// src/common/interceptors/transform.interceptor.ts
 import {
   Injectable,
   NestInterceptor,
@@ -10,9 +9,16 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Reflector } from '@nestjs/core';
+import { plainToInstance } from 'class-transformer';
+import { SENSITIVE_FIELDS } from '@/shared/constants/system.constant';
 
 export const RESPONSE_DTO_KEY = 'responseDto';
 export const ResponseDto = (dto: Type) => SetMetadata(RESPONSE_DTO_KEY, dto);
+const transformOptions = {
+  excludePrefixes: SENSITIVE_FIELDS.EXCLUDE_PREFIXES,
+  excludeExtraneousValues: false,
+  enableImplicitConversion: true,
+};
 
 @Injectable()
 export class TransformInterceptor implements NestInterceptor {
@@ -31,17 +37,18 @@ export class TransformInterceptor implements NestInterceptor {
         }
 
         if (Array.isArray(data)) {
-          return data.map((item) => new responseDto(item));
+          return plainToInstance(responseDto, data, transformOptions);
         }
 
+        // Handle paginated responses
         if (data.data && Array.isArray(data.data)) {
           return {
             ...data,
-            data: data.data.map((item) => new responseDto(item)),
+            data: plainToInstance(responseDto, data.data, transformOptions),
           };
         }
 
-        return new responseDto(data);
+        return plainToInstance(responseDto, data, transformOptions);
       }),
     );
   }

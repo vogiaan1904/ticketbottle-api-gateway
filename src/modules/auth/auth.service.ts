@@ -1,19 +1,20 @@
+import { BusinessException } from '@/common/exceptions/business.exception';
 import { CreateUserRequest, USER_SERVICE_NAME, UserServiceClient } from '@/protogen/user.pb';
 import { ErrorCodeEnum } from '@/shared/constants/error-code.constant';
 import { RefreshTokenData, TokenPair, TokenPayload } from '@/shared/interfaces/token.interface';
 import { AppConfigService } from '@/shared/services/config.service';
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { convertToMilliseconds, convertToSeconds } from '@/shared/utils/time.util';
+import { InjectRedis } from '@nestjs-modules/ioredis';
+import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ClientGrpc } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
-import { SignupDto } from './dto/signup.dto';
-import { ErrorCodeEnum as UserErrorCodeEnum } from '@/shared/microservices/users/error-code.constants';
 import * as argon2 from 'argon2';
-import { convertToMilliseconds, convertToSeconds } from '@/shared/utils/time.util';
 import { randomBytes } from 'crypto';
 import Redis from 'ioredis';
-import { InjectRedis } from '@nestjs-modules/ioredis';
+import { firstValueFrom } from 'rxjs';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { SigninDto } from './dto/signin.dto';
+import { SignupDto } from './dto/signup.dto';
 
 @Injectable()
 export class AuthService {
@@ -94,34 +95,20 @@ export class AuthService {
     };
   }
 
-  async validate(token: string): Promise<TokenPayload> {
-    var decoded: TokenPayload;
-    try {
-      decoded = await this.jwtService.verifyAsync(token);
-    } catch (error) {
-      if (error.name === 'TokenExpiredError') {
-        throw new UnauthorizedException(ErrorCodeEnum.TokenExpired);
-      }
-      throw new UnauthorizedException(ErrorCodeEnum.InvalidToken);
+  async validate(payload: TokenPayload) {
+    const findOneResp = await firstValueFrom(this.userService.findOne({ id: payload.sub }));
+    if (findOneResp.user == null) {
+      throw new BusinessException(ErrorCodeEnum.InvalidToken);
     }
 
-    try {
-      await firstValueFrom(this.userService.findOne({ id: decoded.sub }));
-    } catch (error) {
-      if (error.code === UserErrorCodeEnum.UserNotFound) {
-        throw new UnauthorizedException(ErrorCodeEnum.InvalidToken);
-      }
-      throw error;
-    }
-
-    return decoded;
+    return findOneResp.user;
   }
 
   async signup(dto: SignupDto): Promise<TokenPair> {
     const { email, firstName, lastName, password } = dto;
     const findOneResp = await firstValueFrom(this.userService.findOne({ email }));
     if (findOneResp.user != null) {
-      throw new BadRequestException(ErrorCodeEnum.UserAlreadyExists);
+      throw new BusinessException(ErrorCodeEnum.UserAlreadyExists);
     }
 
     const hashed = await this.hashData(password);
@@ -144,12 +131,12 @@ export class AuthService {
 
     const findOneResp = await firstValueFrom(this.userService.findOne({ email }));
     if (findOneResp.user == null) {
-      throw new BadRequestException(ErrorCodeEnum.InvalidCredentials);
+      throw new BusinessException(ErrorCodeEnum.InvalidCredentials);
     }
 
     const isValidPassword = await argon2.verify(findOneResp.user.password, password);
     if (!isValidPassword) {
-      throw new BadRequestException(ErrorCodeEnum.InvalidCredentials);
+      throw new BusinessException(ErrorCodeEnum.InvalidCredentials);
     }
 
     const tokens = await this.generateTokenPair(findOneResp.user.id, email);
@@ -160,20 +147,20 @@ export class AuthService {
     const refreshKey = this.getRefreshTokenKey(refreshToken);
     const tokenDataStr = await this.redis.get(refreshKey);
     if (!tokenDataStr) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+      throw new BusinessException(ErrorCodeEnum.InvalidToken);
     }
 
     let tokenData: RefreshTokenData;
     try {
       tokenData = JSON.parse(tokenDataStr);
     } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token format');
+      throw new BusinessException(ErrorCodeEnum.InvalidToken);
     }
 
     const currentVersion = await this.getTokenVersion(tokenData.userId);
     if (tokenData.tokenVersion !== currentVersion) {
       await this.invalidateRefreshToken(refreshToken);
-      throw new UnauthorizedException('Token has been revoked');
+      throw new BusinessException(ErrorCodeEnum.InvalidToken);
     }
 
     const maxAge = convertToMilliseconds(this.configService.appConfig.jwtRefreshSlidingWindow);
@@ -232,5 +219,25 @@ export class AuthService {
 
       await multi.exec();
     }
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
+    const { oldPassword, newPassword } = dto;
+    const findOneResp = await firstValueFrom(this.userService.findOne({ id: userId }));
+    if (findOneResp.user == null) {
+      throw new BusinessException(ErrorCodeEnum.UserNotFound);
+    }
+
+    const isValidPassword = await argon2.verify(findOneResp.user.password, oldPassword);
+    if (!isValidPassword) {
+      throw new BusinessException(ErrorCodeEnum.InvalidCredentials);
+    }
+
+    const hashed = await this.hashData(newPassword);
+    await firstValueFrom(this.userService.update({ id: userId, password: hashed }));
+
+    await this.invalidateAllUserTokens(userId);
+
+    return;
   }
 }

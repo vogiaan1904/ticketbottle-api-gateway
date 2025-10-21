@@ -15,6 +15,11 @@ fi
 echo "[protos] Updating submodule to latest remote..."
 git submodule update --remote --recursive protos
 
+echo "[protos] Copying .proto files to src/protos directory..."
+mkdir -p src/protos
+cp -f protos/*.proto src/protos/
+
+
 echo "[protos] Generating TypeScript files from .proto definitions..."
 npm run proto:all
 

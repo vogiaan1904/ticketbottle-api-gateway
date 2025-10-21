@@ -37,11 +37,10 @@ export interface CreateUserResponse {
 
 export interface UpdateUserRequest {
   id: string;
-  email: string;
-  avatar: string;
-  firstName: string;
-  lastName: string;
-  password: string;
+  avatar?: string | undefined;
+  firstName?: string | undefined;
+  lastName?: string | undefined;
+  password?: string | undefined;
 }
 
 export interface UpdateUserResponse {
@@ -60,6 +59,7 @@ export interface FindOneUserResponse {
 export interface FindAllUserRequest {
   ids: string[];
   emails: string[];
+  name: string;
 }
 
 export interface FindAllUserResponse {
