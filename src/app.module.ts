@@ -15,9 +15,11 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { SharedModule } from './shared.module';
 import { EventsModule } from './modules/events/events.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
+import { WaitroomModule } from './modules/waitroom/waitroom.module';
 
 @Module({
-  imports: [SharedModule, AuthModule, UsersModule, EventsModule],
+  imports: [SharedModule, AuthModule, UsersModule, EventsModule, InventoryModule, WaitroomModule],
   controllers: [AppController],
   providers: [
     AppService,

@@ -168,6 +168,7 @@ export interface PaginationInfo {
   pageSize: number;
   count: number;
   lastPage: number;
+  total: number;
   hasNext: boolean;
   hasPrevious: boolean;
 }

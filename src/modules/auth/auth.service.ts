@@ -12,9 +12,9 @@ import * as argon2 from 'argon2';
 import { randomBytes } from 'crypto';
 import Redis from 'ioredis';
 import { firstValueFrom } from 'rxjs';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { SigninDto } from './dto/signin.dto';
-import { SignupDto } from './dto/signup.dto';
+import { ChangePasswordDto } from './dtos/change-password.dto';
+import { SigninDto } from './dtos/signin.dto';
+import { SignupDto } from './dtos/signup.dto';
 
 @Injectable()
 export class AuthService {

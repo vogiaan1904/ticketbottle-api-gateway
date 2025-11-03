@@ -4,10 +4,10 @@ import { TokenPair } from '@/shared/interfaces/token.interface';
 import { RequestUser, RequestWithUser } from '@/shared/types/request-user.type';
 import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { SigninDto } from './dto/signin.dto';
-import { SignupDto } from './dto/signup.dto';
+import { ChangePasswordDto } from './dtos/change-password.dto';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
+import { SigninDto } from './dtos/signin.dto';
+import { SignupDto } from './dtos/signup.dto';
 
 @Controller('auth')
 export class AuthController {
