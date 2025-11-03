@@ -69,6 +69,8 @@ export class AppConfigService {
       },
       userServiceUrl: this.get('MICROSERVICES_USER'),
       eventsServiceUrl: this.get('MICROSERVICES_EVENT'),
+      waitroomServiceUrl: this.get('MICROSERVICES_WAITROOM'),
+      orderServiceUrl: this.get('MICROSERVICES_ORDER'),
     };
   }
 

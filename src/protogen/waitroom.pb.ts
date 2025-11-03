@@ -5,10 +5,10 @@
 // source: waitroom.proto
 
 /* eslint-disable */
-import { GrpcMethod, GrpcStreamMethod } from "@nestjs/microservices";
-import { Observable } from "rxjs";
+import { GrpcMethod, GrpcStreamMethod } from '@nestjs/microservices';
+import { Observable } from 'rxjs';
 
-export const protobufPackage = "waitroom.v1";
+export const protobufPackage = 'waitroom.v1';
 
 export enum SessionStatus {
   SESSION_STATUS_UNSPECIFIED = 0,
@@ -79,8 +79,7 @@ export interface PositionUpdate {
   checkoutUrl: string;
 }
 
-export interface HealthCheckRequest {
-}
+export interface HealthCheckRequest {}
 
 export interface HealthCheckResponse {
   status: string;
@@ -95,7 +94,7 @@ export interface HealthCheckResponse_ComponentsEntry {
   value: string;
 }
 
-export const WAITROOM_V1_PACKAGE_NAME = "waitroom.v1";
+export const WAITROOM_V1_PACKAGE_NAME = 'waitroom.v1';
 
 export interface WaitroomServiceClient {
   joinQueue(request: JoinQueueRequest): Observable<JoinQueueResponse>;
@@ -110,7 +109,9 @@ export interface WaitroomServiceClient {
 }
 
 export interface WaitroomServiceController {
-  joinQueue(request: JoinQueueRequest): Promise<JoinQueueResponse> | Observable<JoinQueueResponse> | JoinQueueResponse;
+  joinQueue(
+    request: JoinQueueRequest,
+  ): Promise<JoinQueueResponse> | Observable<JoinQueueResponse> | JoinQueueResponse;
 
   getQueueStatus(
     request: GetQueueStatusRequest,
@@ -129,17 +130,27 @@ export interface WaitroomServiceController {
 
 export function WaitroomServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["joinQueue", "getQueueStatus", "leaveQueue", "streamQueuePosition", "healthCheck"];
+    const grpcMethods: string[] = [
+      'joinQueue',
+      'getQueueStatus',
+      'leaveQueue',
+      'streamQueuePosition',
+      'healthCheck',
+    ];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcMethod("WaitroomService", method)(constructor.prototype[method], method, descriptor);
+      GrpcMethod('WaitroomService', method)(constructor.prototype[method], method, descriptor);
     }
     const grpcStreamMethods: string[] = [];
     for (const method of grpcStreamMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
-      GrpcStreamMethod("WaitroomService", method)(constructor.prototype[method], method, descriptor);
+      GrpcStreamMethod('WaitroomService', method)(
+        constructor.prototype[method],
+        method,
+        descriptor,
+      );
     }
   };
 }
 
-export const WAITROOM_SERVICE_NAME = "WaitroomService";
+export const WAITROOM_SERVICE_NAME = 'WaitroomService';
