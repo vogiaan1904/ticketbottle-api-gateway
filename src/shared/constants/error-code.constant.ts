@@ -6,6 +6,10 @@ export enum ErrorCodeEnum {
   InvalidCredentials = 'AUTH0002',
 
   UserNotFound = 'USER0000',
+
+  SessionNotFound = 'WAITROOM0001',
+  SessionAlreadyExists = 'WAITROOM0002',
+  WaitroomNotAvailable = 'WAITROOM0003',
 }
 
 export const ErrorCode = Object.freeze<Record<ErrorCodeEnum, [string, number]>>({
@@ -16,4 +20,8 @@ export const ErrorCode = Object.freeze<Record<ErrorCodeEnum, [string, number]>>(
   [ErrorCodeEnum.InvalidCredentials]: ['Invalid credentials', 400],
 
   [ErrorCodeEnum.UserNotFound]: ['User not found', 400],
+
+  [ErrorCodeEnum.SessionNotFound]: ['Session not found', 404],
+  [ErrorCodeEnum.SessionAlreadyExists]: ['Session already exists', 400],
+  [ErrorCodeEnum.WaitroomNotAvailable]: ['Waitroom not available', 503],
 });

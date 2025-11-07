@@ -16,7 +16,7 @@ import { join } from 'path';
           options: {
             url: config.microservicesConfig.userServiceUrl,
             package: USER_PACKAGE_NAME,
-            protoPath: join(__dirname, '../../protos/user.proto'),
+            protoPath: join(__dirname, '../../protos', 'user.proto'),
           },
         }),
         inject: [AppConfigService],

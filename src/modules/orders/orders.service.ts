@@ -64,7 +64,7 @@ export class OrdersService {
         page: pagination.page,
         pageSize: pagination.limit,
         filter: {
-          userId: filter.userId || user.id,
+          userId: user.id,
           eventId: filter.eventId,
           status: filter.status ? OrderStatusMapper.toProto(filter.status) : undefined,
         },

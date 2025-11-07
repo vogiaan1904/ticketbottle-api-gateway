@@ -61,16 +61,11 @@ export class AppConfigService {
 
   get microservicesConfig() {
     return {
-      internalKey: this.get('MICROSERVICE_INTERNAL_KEY'),
-      transport: {
-        tcp: this.get('MICROSERVICES_TRANSPORT_TCP'),
-        redis: this.get('MICROSERVICES_TRANSPORT_REDIS'),
-        rabbitmq: this.get('MICROSERVICES_TRANSPORT_RABBITMQ'),
-      },
-      userServiceUrl: this.get('MICROSERVICES_USER'),
-      eventsServiceUrl: this.get('MICROSERVICES_EVENT'),
-      waitroomServiceUrl: this.get('MICROSERVICES_WAITROOM'),
-      orderServiceUrl: this.get('MICROSERVICES_ORDER'),
+      internalKey: this.get('INTERNAL_KEY'),
+      userServiceUrl: this.get('USER_SERVICE'),
+      eventsServiceUrl: this.get('EVENT_SERVICE'),
+      waitroomServiceUrl: this.get('WAITROOM_SERVICE'),
+      orderServiceUrl: this.get('ORDER_SERVICE'),
     };
   }
 

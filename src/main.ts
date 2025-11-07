@@ -1,8 +1,8 @@
-import { NestFactory, Reflector } from '@nestjs/core';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
-import { AppModule } from './app.module';
-import { LoggerService } from '@services/logger.service';
+import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import { AppConfigService } from '@services/config.service';
+import { LoggerService } from '@services/logger.service';
+import { AppModule } from './app.module';
 import { setupSwagger } from './shared/swagger/setup';
 
 async function bootstrap() {

@@ -1,13 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ClientGrpc } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
 import {
   JoinQueueResponse,
   LeaveQueueResponse,
+  PositionUpdate,
   WAITROOM_SERVICE_NAME,
   WaitroomServiceClient,
 } from '@/protogen/waitroom.pb';
 import { RequestUser } from '@/shared/types/request-user.type';
+import { Inject, Injectable } from '@nestjs/common';
+import { ClientGrpc } from '@nestjs/microservices';
+import { firstValueFrom, Observable } from 'rxjs';
 import { JoinQueueDto, LeaveQueueDto } from './dtos/req';
 
 @Injectable()
@@ -47,5 +48,11 @@ export class WaitroomService {
     );
 
     return leaveQueueResp;
+  }
+
+  streamQueuePosition(sessionId: string): Observable<PositionUpdate> {
+    return this.waitroomService.streamQueuePosition({
+      sessionId,
+    });
   }
 }

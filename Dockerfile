@@ -1,53 +1,51 @@
+# Build stage
 FROM node:20-alpine AS builder
 
-WORKDIR /usr/src/app
-ENV NODE_ENV=production
-ENV NPM_CONFIG_IGNORE_SCRIPTS=true
+# Set working directory
+WORKDIR /app
 
-# Install only necessary build dependencies
-RUN apk add --no-cache openssl python3
-
+# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm ci
 
-COPY prisma ./prisma
-RUN npx prisma generate
-
+# Copy the rest of the application
 COPY . .
 
+# Build the application
 RUN npm run build
 
+# Production stage
 FROM node:20-alpine AS production
 
-WORKDIR /usr/src/app
+# Set environment variables
 ENV NODE_ENV=production
-ENV NPM_CONFIG_IGNORE_SCRIPTS=true
+ENV USER=apigatewayapp
+ENV GROUP=apigatewayap
+ENV UID=2021
+ENV GID=2021
+
+# Set working directory
+WORKDIR /app
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs && adduser -S nestjs -u 1001
+RUN addgroup -g $GID -S $GROUP \
+    && adduser -D -S -h /app -s /sbin/nologin -G $GROUP -u $UID $USER
 
-# Install only the minimal dependencies needed for runtime
-RUN apk add --no-cache openssl
+# Copy package files
+COPY package.json package-lock.json ./
 
-# Copy package files and install production dependencies
-COPY package*.json package-lock.json ./
-RUN npm ci --omit=dev --no-audit --no-fund && \
+# Install production dependencies only
+RUN npm ci --omit=dev --prefer-offline --no-audit && \
     npm cache clean --force
 
-# Copy only necessary files
-COPY --from=builder /usr/src/app/dist ./dist
-COPY --from=builder /usr/src/app/prisma ./prisma
-COPY --from=builder /usr/src/app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /usr/src/app/src/templates ./dist/templates
-COPY --from=builder /usr/src/app/tsconfig.json ./tsconfig.json
-COPY entrypoint.sh ./entrypoint.sh
+# Copy built application
+COPY --from=builder /app/dist ./dist
 
-# Set permissions and switch to non-root user
-RUN chmod +x ./entrypoint.sh && \
-    chown -R nestjs:nodejs /usr/src/app
-USER nestjs
+# Switch to non-root user
+USER $USER
 
+# Expose the application port
 EXPOSE 80
 
-ENTRYPOINT [ "./entrypoint.sh" ]
-CMD [ "npm", "run", "start:prod" ]
+# Start the application
+CMD ["node", "dist/main"]

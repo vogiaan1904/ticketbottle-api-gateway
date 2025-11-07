@@ -51,8 +51,8 @@ export class OrdersController {
       data: resp.orders?.map(OrderMapper.toDto) || [],
       meta: {
         currentPage: resp.pagination.page,
-        perPage: resp.pagination.pageSize,
-        total: resp.pagination.total,
+        perPage: Number(resp.pagination.pageSize),
+        total: Number(resp.pagination.total),
         lastPage: resp.pagination.lastPage,
         hasNext: resp.pagination.hasNext,
         hasPrevious: resp.pagination.hasPrevious,

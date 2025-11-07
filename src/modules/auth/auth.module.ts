@@ -36,7 +36,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
           options: {
             url: configService.microservicesConfig.userServiceUrl,
             package: USER_PACKAGE_NAME,
-            protoPath: join(__dirname, '../../protos/user.proto'),
+            protoPath: join(__dirname, '../../protos', 'user.proto'),
           },
         }),
         inject: [AppConfigService],

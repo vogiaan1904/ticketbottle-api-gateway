@@ -12,15 +12,17 @@ export class OrderMapper {
       userFullname: proto.userFullname,
       userEmail: proto.userEmail,
       userPhone: proto.userPhone,
-      totalAmountCents: proto.totalAmountCents,
+      totalAmountCents: Number(proto.totalAmountCents),
       currency: proto.currency,
       status: OrderStatusMapper.toEnum(proto.status),
       paymentMethod: proto.paymentMethod,
-      items: proto.items.map((item) => ({
-        ticketClassId: item.ticketClassId,
-        quantity: item.quantity,
-        priceCents: item.priceCents,
-      })),
+      items: proto.items
+        ? proto.items.map((item) => ({
+            ticketClassId: item.ticketClassId,
+            quantity: item.quantity,
+            priceCents: Number(item.priceCents),
+          }))
+        : [],
       createdAt: new Date(proto.createdAt),
       updatedAt: new Date(proto.updatedAt),
     };

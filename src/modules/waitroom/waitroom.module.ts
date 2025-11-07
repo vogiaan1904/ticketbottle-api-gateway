@@ -16,7 +16,7 @@ import { join } from 'path';
           options: {
             url: config.microservicesConfig.waitroomServiceUrl,
             package: WAITROOM_V1_PACKAGE_NAME,
-            protoPath: join(__dirname, '../../protos/waitroom.proto'),
+            protoPath: join(__dirname, '../../protos', 'waitroom.proto'),
           },
         }),
         inject: [AppConfigService],

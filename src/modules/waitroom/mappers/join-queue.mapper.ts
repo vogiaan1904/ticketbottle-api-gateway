@@ -5,8 +5,8 @@ export class JoinQueueMapper {
   static toDto(proto: JoinQueueResponse): JoinQueueRespDto {
     return {
       sessionId: proto.sessionId,
-      position: proto.position,
-      queueLength: proto.queueLength,
+      position: Number(proto.position),
+      queueLength: Number(proto.queueLength),
       queuedAt: new Date(proto.queuedAt),
       expiresAt: new Date(proto.expiresAt),
       websocketUrl: proto.websocketUrl,

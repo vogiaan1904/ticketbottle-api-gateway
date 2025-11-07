@@ -16,7 +16,7 @@ import { join } from 'path';
           options: {
             url: config.microservicesConfig.eventsServiceUrl,
             package: EVENT_PACKAGE_NAME,
-            protoPath: join(__dirname, '../../protos/event.proto'),
+            protoPath: join(__dirname, '../../protos', 'event.proto'),
           },
         }),
         inject: [AppConfigService],

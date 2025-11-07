@@ -4,10 +4,6 @@ import { OrderStatus } from '../../enums';
 export class FilterOrderDto {
   @IsOptional()
   @IsString()
-  userId?: string;
-
-  @IsOptional()
-  @IsString()
   eventId?: string;
 
   @IsOptional()

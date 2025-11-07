@@ -1,4 +1,3 @@
-import { IsYYYYMMDD } from '@/common/decorators/isYYYYMMDD.decorator';
 import { IsArray, IsDateString, IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class CreateEventDto {
@@ -11,7 +10,7 @@ export class CreateEventDto {
   description: string;
 
   @IsNotEmpty()
-  @IsYYYYMMDD()
+  @IsDateString()
   startDate: string;
 
   @IsNotEmpty()

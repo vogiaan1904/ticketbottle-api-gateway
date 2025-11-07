@@ -54,8 +54,8 @@ export class EventsController {
       data: resp.events?.map(EventMapper.toDto) || [],
       meta: {
         currentPage: resp.pagination.page,
-        perPage: resp.pagination.pageSize,
-        total: resp.pagination.count,
+        perPage: Number(resp.pagination.pageSize),
+        total: Number(resp.pagination.count),
         lastPage: resp.pagination.lastPage,
         hasNext: resp.pagination.hasNext,
         hasPrevious: resp.pagination.hasPrevious,
