@@ -5,5 +5,6 @@ export class PositionUpdateRespDto {
   queueLength: number;
   status: SessionStatus;
   checkoutUrl: string;
+  checkoutToken: string;
   updatedAt: Date;
 }
